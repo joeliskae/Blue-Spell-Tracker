@@ -545,8 +545,8 @@ const BlueTrackerApp = () => {
 
         {/* Footer */}
         <div className="mt-6 text-center text-sm text-gray-600">
-          <p className="mt-1">Good luck collecting all the spells, Warrior of Light! 💙</p>
-          <p>From Valentina with love</p>
+          <p className="mt-1">Good luck collecting all the spells, Warrior of Light!</p>
+          <p>💙 From Valentina with love 💙</p>
         </div>
       </div>
     </div>
