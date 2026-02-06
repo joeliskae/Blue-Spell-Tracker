@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, RotateCcw, Filter, MapPin } from 'lucide-react';
 
+
 // Complete spell data with mob names and coordinates
 const SPELL_DATA = [
   { id: 1, name: 'Water Cannon', rank: 1, type: 'Damage', level: 1, location: 'Default', mob: 'Starting Spell', coords: '' },
