@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, RotateCcw, Filter, MapPin } from 'lucide-react';
+import { Check, RotateCcw, Filter, MapPin, Target } from 'lucide-react';
 import { SPELL_DATA } from './spelldata.js';
 
 
@@ -345,7 +345,7 @@ const BlueTrackerApp = () => {
           <h2 className="text-xl font-bold text-indigo-900 mb-4">
             {showAll ? 'All Spells' : 'Missing Spells'} ({filteredSpells.length})
           </h2>
-
+          
           {filteredSpells.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🎉</div>
@@ -357,35 +357,55 @@ const BlueTrackerApp = () => {
               {filteredSpells.map(spell => (
                 <div
                   key={spell.id}
-                  className={`p-4 rounded-lg border-2 transition-all ${learnedSpells.has(spell.id)
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    learnedSpells.has(spell.id)
                       ? 'bg-gray-50 border-gray-300 opacity-75'
                       : 'bg-white border-indigo-300'
-                    }`}
+                  }`}
                 >
-                  {/* Ylin rivi: ID, rank, type, name ja checkbox */}
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex flex-col flex-1 gap-1">
-                      {/* ID, rank, type */}
-                      <div className="flex items-center gap-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      {/* Row 1: #3 TYPE Lv 50 */}
+                      <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-mono text-gray-500">#{spell.id}</span>
-                        <span className="text-yellow-600 text-xs">{getRankStars(spell.rank)}</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getTypeColor(spell.type)}`}>
-                          {getTypeIcon(spell.type)} {spell.type}
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase ${getTypeColor(spell.type)}`}>
+                          {spell.type}
                         </span>
+                        <span className="text-xs font-semibold text-gray-700">Lv {spell.level}</span>
                       </div>
-
-                      {/* Spell name */}
-                      <a
+                      
+                      {/* Row 2: SPELL NAME **** */}
+                      <a 
                         href={getSpellWikiUrl(spell.name)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-bold text-base text-indigo-700 hover:text-indigo-900 hover:underline block"
+                        className="font-bold text-base text-indigo-700 hover:text-indigo-900 hover:underline block mb-2"
                       >
-                        {spell.name}
+                        {spell.name} <span className="text-yellow-600 text-xs">{getRankStars(spell.rank)}</span>
                       </a>
+                      
+                      {/* Row 3 & 4: Icon on left, location & mob on right */}
+                      <div className="flex items-start gap-3">
+                        {/* Spell Icon */}
+                        <img 
+                          src={spell.icon} 
+                          alt={spell.name}
+                          className="w-10 h-10 flex-shrink-0 rounded border border-gray-300"
+                        />
+                        
+                        {/* Location and mob info */}
+                        <div className="flex-1 text-sm text-gray-600 space-y-0.5">
+                          <p> {spell.location}</p>
+                          <p className="text-indigo-700">
+                          <span className="text-gray-500"> └ </span>
+                               {spell.mob}
+                            {spell.coords && <span className="text-gray-500 ml-1 text-xs">({spell.coords})</span>}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* Clickable checkbox icon */}
+                    
+                    {/* Right: Checkbox */}
                     <button
                       onClick={(e) => toggleSpell(spell.id, e)}
                       className={`ml-2 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${learnedSpells.has(spell.id)
@@ -393,34 +413,12 @@ const BlueTrackerApp = () => {
                           : 'bg-gray-200 hover:bg-gray-300'
                         }`}
                     >
-                      <Check size={20} className={learnedSpells.has(spell.id) ? 'text-white' : 'text-gray-400'} />
+                      <Check size={24} className={learnedSpells.has(spell.id) ? 'text-white' : 'text-gray-400'} />
                     </button>
-                  </div>
-
-                  {/* Alarivi: Icon vasemmalle, info oikealle */}
-                  <div className="flex items-start gap-3">
-                    {/* Spell Icon vasemmalle */}
-                    <img
-                      src={spell.icon}
-                      alt={spell.name}
-                      className="w-10 h-10 rounded border border-gray-300 flex-shrink-0"
-                    />
-
-                    {/* Spell info oikealle */}
-                    <div className="flex flex-col text-sm text-gray-700">
-                      <p>
-                        <span className="font-semibold">Lv {spell.level}</span> • 📍 {spell.location}
-                      </p>
-                      <p className="text-indigo-700 font-medium">
-                        🎯 {spell.mob}
-                        {spell.coords && <span className="text-gray-500 ml-1">({spell.coords})</span>}
-                      </p>
-                    </div>
                   </div>
                 </div>
               ))}
             </div>
-
           )}
         </div>
 
