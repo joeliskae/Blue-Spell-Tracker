@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, RotateCcw, Filter, MapPin, Target } from 'lucide-react';
 import { SPELL_DATA } from './spelldata.js';
+import { BUILD_PRESETS } from './buildData.js';
 
 
 const BlueTrackerApp = () => {
@@ -9,6 +10,7 @@ const BlueTrackerApp = () => {
   const [sortBy, setSortBy] = useState('number');
   const [filterType, setFilterType] = useState('all');
   const [filterRank, setFilterRank] = useState('all');
+  const [activeBuild, setActiveBuild] = useState('none'); // Build preset selector
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -30,7 +32,6 @@ const BlueTrackerApp = () => {
       lastUpdated: new Date().toISOString()
     };
     localStorage.setItem('ffxiv-blue-mage-progress', JSON.stringify(data));
-    console.log(data);
   }, [learnedSpells]);
 
   const toggleSpell = (id, e) => {
@@ -51,9 +52,25 @@ const BlueTrackerApp = () => {
     }
   };
 
+  // Handle build preset change
+  const handleBuildChange = (build) => {
+    setActiveBuild(build);
+    if (build !== 'none') {
+      setShowAll(true); // Automatically show all spells when selecting a build
+    }
+    if (build === 'none') {
+      setShowAll(false);
+    }
+  };
+
   // Get filtered and sorted spells
   const getFilteredSpells = () => {
     let filtered = SPELL_DATA;
+
+    // Filter by build preset first
+    if (activeBuild !== 'none' && BUILD_PRESETS[activeBuild]) {
+      filtered = filtered.filter(s => BUILD_PRESETS[activeBuild].includes(s.id));
+    }
 
     if (filterType !== 'all') {
       filtered = filtered.filter(s => s.type === filterType);
@@ -88,14 +105,14 @@ const BlueTrackerApp = () => {
   const getLocationGroups = () => {
     const filtered = getFilteredSpells();
     const groups = {};
-
+    
     // Filter out Whalaqee Totem spells (NPC in Ul'dah)
-    const instanceSpells = filtered.filter(spell =>
-      !spell.location.includes('Ul\'dah') &&
+    const instanceSpells = filtered.filter(spell => 
+      !spell.location.includes('Ul\'dah') && 
       !spell.mob.includes('Totem') &&
       !spell.location.includes('Default')
     );
-
+    
     instanceSpells.forEach(spell => {
       if (!groups[spell.location]) {
         groups[spell.location] = [];
@@ -104,16 +121,16 @@ const BlueTrackerApp = () => {
     });
 
     // Categorize locations by player count
-    const dungeonKeywords = ['Longstop', 'Vigil', 'Manor', 'Palace', 'Sastasha', 'Deepcroft', 'Vale', 'Mines', 'Qarn',
-      'Amdapor', 'Halatali', 'Castle', 'Vault', 'Library', 'Arboretum', 'Compass', 'Fist',
-      'Skalla', 'Cosmos', 'Gauntlet', 'Relict', 'Gulg', 'Mheg', 'Amaurot', 'Well', 'Burn',
-      'Dzemael', 'Cutter', 'Snowcloak', 'Shisui', 'Sirensong', 'Doma'];
-
-    const trialRaidKeywords = ['Neck', 'Embers', 'Navel', 'Howling', 'Whorleater', 'Keep', 'Thornmarch', 'Tree',
-      'Amphitheatre', 'Thok ast Thok', 'Containment', 'Emanation', 'Kier', 'Fluminis',
-      'Plague', 'Immaculate', 'Drift', 'Coil', 'Alexander', 'Deltascape', 'Sigmascape',
-      'Alphascape', 'Eden'];
-
+    const dungeonKeywords = ['Longstop', 'Vigil', 'Manor', 'Palace', 'Sastasha', 'Deepcroft', 'Vale', 'Mines', 'Qarn', 
+                             'Amdapor', 'Halatali', 'Castle', 'Vault', 'Library', 'Arboretum', 'Compass', 'Fist', 
+                             'Skalla', 'Cosmos', 'Gauntlet', 'Relict', 'Gulg', 'Mheg', 'Amaurot', 'Well', 'Burn', 
+                             'Dzemael', 'Cutter', 'Snowcloak', 'Shisui', 'Sirensong', 'Doma'];
+    
+    const trialRaidKeywords = ['Neck', 'Embers', 'Navel', 'Howling', 'Whorleater', 'Keep', 'Thornmarch', 'Tree', 
+                               'Amphitheatre', 'Thok ast Thok', 'Containment', 'Emanation', 'Kier', 'Fluminis', 
+                               'Plague', 'Immaculate', 'Drift', 'Coil', 'Alexander', 'Deltascape', 'Sigmascape', 
+                               'Alphascape', 'Eden'];
+    
     const categorized = {
       fourPlayer: [],
       eightPlayer: []
@@ -176,7 +193,7 @@ const BlueTrackerApp = () => {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h1 className="text-3xl font-bold text-indigo-900 mb-2">FFXIV Blue Mage Spell Tracker</h1>
           <p className="text-gray-600 mb-4">Track your progress collecting all 124 Blue Mage spells!</p>
-
+          
           {/* Progress Bar */}
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
@@ -184,7 +201,7 @@ const BlueTrackerApp = () => {
               <span className="font-bold text-indigo-900">{learnedSpells.size} / {SPELL_DATA.length} ({progress}%)</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-4">
-              <div
+              <div 
                 className="bg-gradient-to-r from-indigo-500 to-blue-600 h-4 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
@@ -192,17 +209,18 @@ const BlueTrackerApp = () => {
           </div>
 
           {/* Controls */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex justify-between items-center">
             <button
               onClick={() => setShowAll(!showAll)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${showAll
-                  ? 'bg-indigo-600 text-white'
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                showAll 
+                  ? 'bg-indigo-600 text-white' 
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+              }`}
             >
               {showAll ? 'Show Missing Only' : 'Show All Spells'}
             </button>
-
+            
             <button onClick={resetProgress} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
               <RotateCcw size={18} />
               Reset All
@@ -216,12 +234,12 @@ const BlueTrackerApp = () => {
             <Filter size={20} className="text-indigo-600" />
             <h2 className="text-xl font-bold text-indigo-900">Filters & Sorting</h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-              <select
-                value={sortBy}
+              <select 
+                value={sortBy} 
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-lg"
               >
@@ -235,8 +253,8 @@ const BlueTrackerApp = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Type</label>
-              <select
-                value={filterType}
+              <select 
+                value={filterType} 
                 onChange={(e) => setFilterType(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-lg"
               >
@@ -250,17 +268,36 @@ const BlueTrackerApp = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Rank</label>
-              <select
-                value={filterRank}
+              <select 
+                value={filterRank} 
                 onChange={(e) => setFilterRank(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-lg"
               >
                 <option value="all">All Ranks</option>
-                <option value="1">★ (Easy)</option>
+                <option value="1">★</option>
                 <option value="2">★★</option>
                 <option value="3">★★★</option>
                 <option value="4">★★★★</option>
-                <option value="5">★★★★★ (Hard)</option>
+                <option value="5">★★★★★</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Build Preset</label>
+              <select 
+                value={activeBuild} 
+                onChange={(e) => handleBuildChange(e.target.value)}
+                className="w-full p-2 border border-indigo-400 rounded-lg bg-indigo-50"
+              >
+                <option value="none">No Preset</option>
+                <option value="solo">Solo</option>
+                <option value="dungeonTank">Dungeon Tank</option>
+                <option value="dungeonHealer">Dungeon Healer</option>
+                <option value="dungeonDps">Dungeon DPS</option>
+                <option value="raidTank">Raid Tank</option>
+                <option value="raidHealer">Raid Main Healer</option>
+                <option value="raidOffHeal">Raid Off Healer</option>
+                <option value="raidDps">Raid DPS</option>
               </select>
             </div>
 
